@@ -7,3 +7,29 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+# Spin Wheel API
+
+This repository contains the code for the Spin Wheel API project. Follow the instructions below to set up the project locally.
+
+## Getting Started
+
+### Prerequisites
+
+- PHP (version 8.0 or higher)
+- Composer (latest version)
+- MySQL or any other supported database
+- Git
+
+### Installation
+
+1. **Clone the Repository**
+
+   First, clone the repository to your local machine. Open your terminal and run:
+
+   ```bash
+   git clone https://github.com/Asadktk/spin-wheel-api-task.git
+   cd spin-wheel-api-task
+git remote set-url origin https://github.com/Asadktk/spin-wheel-api-task.git
+cp .env.example .env
+composer install
+
