@@ -52,10 +52,10 @@ Follow these steps to set up the project locally:
 
 ### Explanation:
 ```bash
-- cp .env.example .env 
-- `composer install` 
+``` cp .env.example .env 
+- ```composer install` 
 
-- `php artisan key:generate`
+- ```php artisan key:generate`
 - `php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"`
 - `php artisan migrate`
 - `composer require "spatie/laravel-medialibrary"`
