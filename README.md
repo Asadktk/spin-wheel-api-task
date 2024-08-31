@@ -49,24 +49,18 @@ Follow these steps to set up the project locally:
 
 ### Explanation:
 
-- `cp .env.example .env` is a shell command used to copy the `.env.example` file to a new file named `.env`. This is a common practice in Laravel projects to create a new environment configuration file based on the provided example.
-- `composer install` is a Composer command used to install all the PHP dependencies listed in the `composer.json` file.
+- `cp .env.example .env` 
+- `composer install` 
 
-Including these commands in your README file helps users understand the steps required to configure their local environment correctly.
-
-
-### Explanation:
-
-- **Cloning the Repository**: Retrieves the project code from GitHub.
-- **Setting Up Your Environment File**: Creates a configuration file for your local environment.
-- **Installing PHP Dependencies**: Downloads and installs the required PHP packages.
-- **Generating Application Key**: Sets a unique application key used for encryption and security.
-- **Setting Up Laravel Sanctum**: Configures Laravel Sanctum for API token authentication.
-- **Running Migrations**: Creates the necessary database tables.
-- **Installing and Configuring Packages**: Adds and configures additional packages like Spatie Media Library and Laravel Wallet.
-- **Seeding the Database**: Populates the database with initial data.
-- **Serving the Application**: Launches the Laravel development server.
-
-Including these steps in your README will help users set up the project efficiently and avoid common issues.
-
-
+- `php artisan key:generate`
+- `php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"`
+- `php artisan migrate`
+- `composer require "spatie/laravel-medialibrary"`
+- `php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="medialibrary-migrations"`
+- `composer require bavix/laravel-wallet`
+- `php artisan vendor:publish --tag=laravel-wallet-migrations`
+- `php artisan vendor:publish --tag=laravel-wallet-config`
+- `php artisan migrate`
+- `php artisan db:seed --class=RolesSeeder`
+- `php artisan db:seed`
+- `php artisan serve`
