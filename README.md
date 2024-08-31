@@ -45,11 +45,14 @@ Follow these steps to set up the project locally:
    ```bash
    git clone https://github.com/Asadktk/spin-wheel-api-task.git
    cd spin-wheel-api-task
+   git checkout master
+   git pull origin master
+   code .
 
 
 ### Explanation:
-
-- `cp .env.example .env` 
+```bash
+- cp .env.example .env 
 - `composer install` 
 
 - `php artisan key:generate`
