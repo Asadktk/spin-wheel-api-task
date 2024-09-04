@@ -52,7 +52,7 @@ Follow these steps to set up the project locally:
 
 ### Explanation:
 
-- ` cp .env.example .env 
+- ` cp .env.example .env `
 - `composer install` 
 
 - `php artisan key:generate`
