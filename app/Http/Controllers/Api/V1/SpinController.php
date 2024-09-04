@@ -4,14 +4,12 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\StoreSpinRequest;
-use App\Http\Resources\Api\V1\SpinCollection;
 use App\Http\Resources\Api\V1\SpinHistoryCollection;
+use App\Http\Resources\Api\V1\SpinHistoryResource;
 use App\Http\Resources\Api\V1\SpinResource;
-use App\Http\Resources\Api\V1\WalletTransactionResource;
 use App\Models\Spin;
 use App\Models\WalletTransaction;
 use App\Traits\ApiResponses;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -19,93 +17,88 @@ class SpinController extends Controller
 {
     use ApiResponses;
 
+    private $user;
+
+    public function __construct()
+    {
+        $this->user = Auth::user();
+    }
+
+    private function getUserSpins()
+    {
+        return Spin::where('user_id', $this->user->id)
+            ->with(['user', 'transaction'])
+            ->paginate();
+    }
+
+    private function createTransaction($amount, $source, $type)
+    {
+        $transactionId = 'speedforce-' . now()->year . '-' . strtoupper(Str::random(9));
+        return WalletTransaction::create([
+            'transaction_id' => $transactionId,
+            'user_id' => $this->user->id,
+            'amount' => $amount,
+            'source' => $source,
+            'type' => $type,
+        ]);
+    }
+
+    private function createSpin($spinType, $amount, $result)
+    {
+        return Spin::create([
+            'user_id' => $this->user->id,
+            'spin_type' => $spinType,
+            'amount' => $amount,
+            'result' => $result,
+        ]);
+    }
+
     public function useSpin(StoreSpinRequest $request)
     {
-        $user = Auth::user();
+        $freeSpinsToday = Spin::where('user_id', $this->user->id)
+            ->where('spin_type', 'free')
+            ->whereDate('created_at', now()->toDateString());
 
-        if ($request->spin_type === 'free') {
-            $spinsToday = Spin::where('user_id', $user->id)
-                ->where('spin_type', 'free')
-                ->whereDate('created_at', now()->toDateString())
-                ->count();
 
-            if ($spinsToday >= 3) {
-                return $this->error(['message' => 'You have used all free spins for today.'], 403);
-            }
+        if ($request->spin_type === 'free' && $freeSpinsToday->count() >= 50) {
+            return $this->error(['message' => 'You have used all free spins for today.'], 403);
         }
 
         $prize = 100;
-        $user->wallet->deposit($prize);
+        $this->user->wallet->deposit($prize);
 
-        $transactionId = 'speedforce-' . now()->year . '-' . strtoupper(Str::random(9));
-        $transaction = WalletTransaction::create([
-            'transaction_id' => $transactionId,
-            'user_id' => $user->id,
-            'amount' => $prize,
-            'source' => 'spin_prize',
-            'type' => 'addition',
-        ]);
+        $this->createTransaction($prize, 'spin_prize', 'addition');
+        $this->createSpin($request->spin_type, $prize, 'Won ' . $prize);
 
-        $spin = Spin::create([
-            'user_id' => $user->id,
-            'spin_type' => $request->spin_type,
-            'amount' => $prize,
-            'result' => 'Won ' . $prize
-        ]);
-
-        return $this->ok([
-            'spin' => new SpinResource($spin),
-            'transaction' => new WalletTransactionResource($transaction),
-            'balance' => $user->wallet->balance
-        ]);
+        return SpinResource::collection($this->getUserSpins());
     }
 
     public function buySpin(StoreSpinRequest $request)
     {
-        $user = Auth::user();
+        if ($request->spin_type !== 'paid') {
+            return $this->error(['message' => 'Invalid spin type for this action.'], 403);
+        }
+
         $cost = 200;
 
-        if ($user->wallet->balance < $cost) {
+        if ($this->user->wallet->balance < $cost) {
             return $this->error(['message' => 'Insufficient balance to buy a spin.'], 403);
         }
 
-        $user->wallet->withdraw($cost);
+        $this->user->wallet->withdraw($cost);
 
-        $transactionId = 'speedforce-' . now()->year . '-' . strtoupper(Str::random(9));
-        $transaction = WalletTransaction::create([
-            'transaction_id' => $transactionId,
-            'user_id' => $user->id,
-            'amount' => $cost,
-            'source' => 'buy_spin',
-            'type' => 'deduction',
-        ]);
+        $this->createTransaction($cost, 'buy_spin', 'deduction');
+        $this->createSpin($request->spin_type, $cost, 'Paid spin purchased');
 
-        $spin = Spin::create([
-            'user_id' => $user->id,
-            'spin_type' => 'paid',
-            'amount' => $cost,
-            'result' => 'Paid spin purchased'
-        ]);
-
-        return $this->ok([
-            'spin' => new SpinResource($spin),
-            'transaction' => new WalletTransactionResource($transaction),
-            'balance' => $user->wallet->balance
-        ]);
+        return SpinResource::collection($this->getUserSpins());
     }
 
-
-
-
-    public function getUserSpinHistory(Request $request)
+    public function getUserSpinHistory()
     {
-        $user = Auth::user();
-
-        if (!$user) {
+        if (!$this->user) {
             return $this->error('User not authenticated', 401);
         }
 
-        $spins = $user->spins;
-        return new SpinHistoryCollection($spins);
+        return SpinHistoryResource::collection($this->user->spins);
     }
 }

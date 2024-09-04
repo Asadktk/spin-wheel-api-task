@@ -25,7 +25,7 @@ class SpinHistoryResource extends JsonResource
                 'updated_at' => $this->updated_at->toIso8601String(),
             ],
             'links' => [
-                'self' => url("#"),
+                'self' => 'to do',
             ],
         ];
     }
