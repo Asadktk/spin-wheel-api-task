@@ -55,9 +55,6 @@ Follow these steps to set up the project locally:
 - ` cp .env.example .env `
 - `composer install` 
 
-- `php artisan key:generate`
-- `php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"`
-- `php artisan migrate`
 - `composer require "spatie/laravel-medialibrary"`
 - `php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="medialibrary-migrations"`
 - `composer require bavix/laravel-wallet`
